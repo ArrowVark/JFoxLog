@@ -1,0 +1,113 @@
+package io.github.arrowvark.jfoxlog.foxglove.servers.websocket;
+
+import io.github.arrowvark.jfoxlog.foxglove.FoxgloveLoggable;
+
+public class FoxgloveChannel<T extends FoxgloveLoggable> {
+
+    public enum LoggingType {
+        SERVER_DRIVEN,
+        USER_DRIVEN,
+        LOW_FREQUENCY_SERVER_DRIVEN,
+        LOW_FREQUENCY_SERVER_DRIVEN_STATIC
+    }
+
+    // Loggable
+    public T getLoggable() {
+        return loggable;
+    }
+
+    // Id
+    public int getId() {
+        return id;
+    }
+
+    // Topic
+    public String getTopic() {
+        return topic;
+    }
+
+
+    // Logging Type
+    public LoggingType getLoggingType() {
+        return loggingType;
+    }
+
+    public FoxgloveChannel<T> setLoggingType(LoggingType loggingType) {
+        this.loggingType = loggingType;
+        return this;
+    }
+
+    // Fetch
+    public Runnable getFetchMethod() {
+        return fetch;
+    }
+
+    public FoxgloveChannel<T> setFetchMethod(Runnable fetchMethod) {
+        this.fetch = fetchMethod;
+        return this;
+    }
+
+    // Vars
+    private final T loggable;
+    private final int id;
+    private final String topic;
+    private LoggingType loggingType;
+    private String cache;
+    private Runnable fetch;
+
+    public FoxgloveChannel(int id, String topic, LoggingType loggingType, T loggable) {
+        this.id = id;
+        this.topic = topic;
+        this.loggingType = loggingType;
+        this.loggable = loggable;
+    }
+
+    // TODO: May add these back later for qol although they are unused now
+//    public void advertise(FoxgloveWebSocketServer server) {
+//        if (loggable != null) {
+//            System.out.println(loggable.getSchemaName());
+//            System.out.println(loggable.getSchema());
+//            server.advertise(id, topic, loggable.getSchemaName(), loggable.getSchema());
+//            hasAdvertised = true;
+//        }
+//    }
+//
+//    public void broadcast(FoxgloveWebSocketServer server) {
+//        if (hasAdvertised) {
+//            onBroadcast.run();
+//
+////            if (loggable instanceof FoxgloveTypes.Log) {
+////
+////                if (((FoxgloveTypes.Log) loggable).message() == null) return;
+////
+////                server.broadcastJsonMessageOnChannel(getLoggable().toJson(), id);
+////
+////                ((FoxgloveTypes.Log) loggable).expire();
+////                return;
+////            }
+//
+//            server.broadcastJsonMessageOnChannel(getLoggable().toJson(), id);
+//        }
+//    }
+
+    public String requestData() {
+        if (fetch != null) {
+            fetch.run(); // Fetch most up-to-date data
+        }
+        String data = loggable.toJson(); // Serialize
+        cache = data; // Set cache to most up-to-date data
+        return data; // Return serialized data
+    }
+
+    public String requestCache() {
+        if (cache == null) { // Check if the cache exists
+            return requestData(); // Request data normally if it does not exist
+        }
+
+        return cache; // Return the cached data
+    }
+
+    public void free(FoxgloveWebSocketServer server) {
+        server.freeChannel(this);
+    }
+}
