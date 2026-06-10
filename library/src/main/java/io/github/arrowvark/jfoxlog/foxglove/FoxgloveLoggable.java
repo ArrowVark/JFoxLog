@@ -2,6 +2,8 @@ package io.github.arrowvark.jfoxlog.foxglove;
 
 import io.github.arrowvark.jfoxlog.foxglove.servers.websocket.FoxgloveChannel;
 import io.github.arrowvark.jfoxlog.foxglove.servers.websocket.FoxgloveWebSocketServer;
+import io.github.arrowvark.jfoxlog.foxglove.types.time.Duration;
+import io.github.arrowvark.jfoxlog.foxglove.util.DynamicFoxgloveLoggable;
 
 public interface FoxgloveLoggable {
     /**
@@ -56,5 +58,9 @@ public interface FoxgloveLoggable {
      */
     default FoxgloveLoggable setupLogging(String topic) {
         return setupLogging(topic, FoxgloveChannel.LoggingType.SERVER_DRIVEN);
+    }
+
+    default DynamicFoxgloveLoggable<? extends FoxgloveLoggable> makeDynamic() {
+        return new DynamicFoxgloveLoggable<>(this);
     }
 }

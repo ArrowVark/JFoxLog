@@ -3,6 +3,7 @@ package io.github.arrowvark.jfoxlog.foxglove.types.primitive;
 import io.github.arrowvark.jfoxlog.foxglove.FoxgloveLoggable;
 import io.github.arrowvark.jfoxlog.foxglove.types.geometry.pose.Pose;
 import io.github.arrowvark.jfoxlog.foxglove.types.misc.Color;
+import io.github.arrowvark.jfoxlog.foxglove.types.scene.sceneEntity.SceneEntity;
 
 import java.util.Optional;
 
@@ -46,5 +47,17 @@ public class ArrowPrimitive implements FoxgloveLoggable {
         color.ifPresent(aColor -> this.color = aColor);
 
         return this;
+    }
+
+    public static class Builder<C> {
+        private final C ctx;
+
+        public Builder(C ctx) {
+            this.ctx = ctx;
+        }
+
+        public C done() {
+            return ctx;
+        }
     }
 }

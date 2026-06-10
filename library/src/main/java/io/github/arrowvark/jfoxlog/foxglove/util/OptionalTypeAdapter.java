@@ -1,4 +1,4 @@
-package io.github.arrowvark.jfoxlog.foxglove;
+package io.github.arrowvark.jfoxlog.foxglove.util;
 
 import com.google.gson.Gson;
 import com.google.gson.TypeAdapter;

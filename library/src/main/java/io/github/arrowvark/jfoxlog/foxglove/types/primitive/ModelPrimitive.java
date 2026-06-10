@@ -5,6 +5,10 @@ import io.github.arrowvark.jfoxlog.foxglove.types.Util;
 import io.github.arrowvark.jfoxlog.foxglove.types.geometry.pose.Pose;
 import io.github.arrowvark.jfoxlog.foxglove.types.geometry.vector.Vector3;
 import io.github.arrowvark.jfoxlog.foxglove.types.misc.Color;
+import io.github.arrowvark.jfoxlog.foxglove.types.scene.sceneEntity.SceneEntity;
+import io.github.arrowvark.jfoxlog.foxglove.util.DynamicValue;
+
+import java.util.function.Supplier;
 
 public class ModelPrimitive implements FoxgloveLoggable {
 
@@ -47,5 +51,17 @@ public class ModelPrimitive implements FoxgloveLoggable {
     @Override
     public String toJson() {
         return Util.GSON.toJson(this);
+    }
+
+    public static class Builder<C> {
+        private final C ctx;
+
+        public Builder(C ctx) {
+            this.ctx = ctx;
+        }
+
+        public C done() {
+            return ctx;
+        }
     }
 }

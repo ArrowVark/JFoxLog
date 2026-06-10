@@ -1,8 +1,14 @@
 package io.github.arrowvark.jfoxlog.foxglove.types.time;
 
 import io.github.arrowvark.jfoxlog.foxglove.FoxgloveLoggable;
+import io.github.arrowvark.jfoxlog.foxglove.types.misc.KeyValuePair;
+import io.github.arrowvark.jfoxlog.foxglove.types.scene.sceneEntity.SceneEntity;
+import io.github.arrowvark.jfoxlog.foxglove.util.DynamicFoxgloveLoggable;
+import io.github.arrowvark.jfoxlog.foxglove.util.FoxgloveLoggableBuilder;
 
+import java.sql.Time;
 import java.time.Instant;
+import java.util.List;
 import java.util.Optional;
 import java.util.function.Supplier;
 
@@ -14,6 +20,10 @@ public class Timestamp implements FoxgloveLoggable {
     public Timestamp(long sec, long nsec) {
         this.sec = sec;
         this.nsec = nsec;
+    }
+
+    public static Timestamp defaultObject() {
+        return new Timestamp(0, 0);
     }
 
     @Override
@@ -59,6 +69,81 @@ public class Timestamp implements FoxgloveLoggable {
         long nsec = now.getNano();
 
         Timestamp timestamp = new Timestamp(sec, nsec);
-        return () -> timestamp.mutate(Optional.of(sec), Optional.of(nsec));
+        return () -> {
+            Instant nowS = Instant.now();
+            long secS = nowS.getEpochSecond();
+            long nsecS = nowS.getNano();
+
+            return timestamp.mutate(Optional.of(secS), Optional.of(nsecS));
+        };
+    }
+
+    public static DynamicFoxgloveLoggable<Timestamp> dynamicNow() {
+        Instant now = Instant.now();
+        long sec = now.getEpochSecond();
+        long nsec = now.getNano();
+
+        Timestamp timestamp = new Timestamp(sec, nsec);
+        return new DynamicFoxgloveLoggable<>(timestamp, List.of(
+                () -> {
+                    Instant nowS = Instant.now();
+                    long secS = nowS.getEpochSecond();
+                    long nsecS = nowS.getNano();
+
+                    timestamp.mutate(Optional.of(secS), Optional.of(nsecS));
+                }
+        ));
+    }
+
+    public static class Builder<Ctx> extends FoxgloveLoggableBuilder<Timestamp, Timestamp.Builder<Ctx>> {
+        private final Ctx ctx;
+        private Supplier<Long> sec;
+        private Supplier<Long> nsec;
+
+        protected Builder(Ctx ctx) {
+            super(Timestamp.defaultObject());
+            this.ctx = ctx;
+        }
+
+        public Builder sec(long sec) {
+            this.sec = () -> sec;
+            return this;
+        }
+
+        public Builder sec(Supplier<Long> secSupplier) {
+            this.sec = secSupplier;
+            return this;
+        }
+
+        public Builder nsec(long nsec) {
+            this.nsec = () -> nsec;
+            return this;
+        }
+
+        public Builder nsec(Supplier<Long> nsecSupplier) {
+            this.nsec = nsecSupplier;
+            return this;
+        }
+
+        public Ctx done() {
+            return ctx;
+        }
+
+        @Override
+        protected Timestamp constructLoggable() {
+            instance.sec = sec.get();
+            instance.nsec = nsec.get();
+            return instance;
+        }
+
+        @Override
+        protected DynamicFoxgloveLoggable<Timestamp> constructDynamicLoggable() {
+            return new DynamicFoxgloveLoggable<>(instance, List.of(
+                    () -> instance.mutate(
+                                Optional.of(sec.get()),
+                                Optional.of(nsec.get())
+                    )
+            ));
+        }
     }
 }

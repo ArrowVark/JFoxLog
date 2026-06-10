@@ -1,6 +1,7 @@
 package io.github.arrowvark.jfoxlog.foxglove.types.primitive;
 
 import io.github.arrowvark.jfoxlog.foxglove.FoxgloveLoggable;
+import io.github.arrowvark.jfoxlog.foxglove.types.scene.sceneEntity.SceneEntity;
 
 public class SpherePrimitive implements FoxgloveLoggable {
     @Override
@@ -16,5 +17,17 @@ public class SpherePrimitive implements FoxgloveLoggable {
     @Override
     public String toJson() {
         return "";
+    }
+
+    public static class Builder<C> {
+        private final C ctx;
+
+        public Builder(C ctx) {
+            this.ctx = ctx;
+        }
+
+        public C done() {
+            return ctx;
+        }
     }
 }
