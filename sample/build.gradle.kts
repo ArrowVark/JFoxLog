@@ -11,7 +11,7 @@ java {
 }
 
 group = "io.github.arrowvark.jfoxlog"
-version = "1.0-SNAPSHOT"
+version = "0.0.1"
 
 val ROBOT_MAIN_CLASS = "io.github.arrowvark.jfoxlog.sample.Main"
 
