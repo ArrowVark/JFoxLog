@@ -1,18 +1,23 @@
 # Welcome to JFoxLog!
 
----
-
 ## What is JFoxLog?
 
 JFoxLog is a Java library that brings [Foxglove]() logging support to FRC robots. Instead of having to manually control
 data serialization and communication with [Foxglove](), JFoxLog abstracts this and gives programmers easy to use tools
-while still allowing for complex control if needed. Additionally, JFoxLog runs alongside your existing robot code which
-completely eliminates the need for a external processor on your robot. Because of its nature, JFoxLog also works in robot
+while still allowing for complex control if needed. Additionally, JFoxLog runs alongside your existing robot code,
+completely eliminating the need for an external processor on your robot. Because of its nature, JFoxLog also works in robot
 simulations, though the ip address which [Foxglove]() connects to will be slightly different.
 
 JFoxLog is built to work in tandem with [AdvantageKit](), with much of the JFoxLog syntax matching what you would expect
 of [AdvantageKit](). In fact, JFoxLog can simply be added on top of an already existing [AdvantageKit]() project and
 both will work with no downsides.
+
+Since [Foxglove]()'s logging strategy is quite different than that of standard FRC logging tools, JFoxLog does not copy over
+topics from network tables, but instead requires the programmer to define what values should be logged. In practice this has
+been significantly more productive than simply mirroring network tables, and brings many features that work wonderfully for
+[Foxglove]() which would have been a headache for other tools. One such feature I feel it is important to bring light to is
+the ability (and heavy suggestion) to group logged values from one subsystem into a single topic, giving each subsystem its
+own topic.
 
 ## Performance
 
