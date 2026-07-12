@@ -3,6 +3,7 @@ import edu.wpi.first.toolchain.NativePlatforms
 plugins {
     id("java")
     id("edu.wpi.first.GradleRIO") version "2026.2.1"
+    application
 }
 
 java {
@@ -10,10 +11,14 @@ java {
     targetCompatibility = JavaVersion.VERSION_17
 }
 
-group = "io.github.arrowvark.jfoxlog"
+application {
+    mainClass.set(ROBOT_MAIN_CLASS)
+}
+
+group = "io.github.hudsoncrisp.jfoxlog"
 version = "0.0.1"
 
-val ROBOT_MAIN_CLASS = "io.github.arrowvark.jfoxlog.sample.Main"
+val ROBOT_MAIN_CLASS = "io.github.hudsoncrisp.jfoxlog.sample.Main"
 
 repositories {
     mavenCentral()

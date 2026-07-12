@@ -9,7 +9,7 @@ java {
     targetCompatibility = JavaVersion.VERSION_17
 }
 
-group = "io.github.arrowvark"
+group = "io.github.hudsoncrisp"
 version = "0.0.1"
 
 tasks.named("simulateJava") { enabled = false }
