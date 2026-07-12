@@ -1,6 +1,8 @@
 package io.github.arrowvark.jfoxlog.foxglove.servers.http;
 
 import com.sun.net.httpserver.HttpServer;
+import io.github.arrowvark.jfoxlog.debug.FoxgloveDebugLogSeverity;
+import io.github.arrowvark.jfoxlog.debug.FoxgloveDebugPanel;
 import io.github.arrowvark.jfoxlog.foxglove.servers.Util;
 
 import java.io.IOException;
@@ -17,6 +19,8 @@ public class FoxgloveHttpServer {
     static {
         INSTANCE = new FoxgloveHttpServer(port);
         INSTANCE.start();
+
+        FoxgloveDebugPanel.log("Http server instance created", FoxgloveDebugLogSeverity.PRERUN);
     }
 
     private FoxgloveHttpServer(int port) {

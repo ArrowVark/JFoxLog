@@ -4,6 +4,8 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import io.github.arrowvark.jfoxlog.debug.FoxgloveDebugLogSeverity;
+import io.github.arrowvark.jfoxlog.debug.FoxgloveDebugPanel;
 import org.java_websocket.WebSocket;
 import org.java_websocket.drafts.Draft;
 import org.java_websocket.exceptions.InvalidDataException;
@@ -37,6 +39,8 @@ public class FoxgloveWebSocketServer extends WebSocketServer {
     static { // Create instance
         INSTANCE = new FoxgloveWebSocketServer(port);
         INSTANCE.start();
+
+        FoxgloveDebugPanel.log("WebSocket server instance created", FoxgloveDebugLogSeverity.PRERUN);
     }
 
     private static String NAME = "FRC Robot Server";
@@ -111,7 +115,7 @@ public class FoxgloveWebSocketServer extends WebSocketServer {
         return INSTANCE;
     }
 
-    public void periodic() {
+    public static void periodic() {
         // TODO: Dumb messaging for now, may change to a smarter system later
         for (FoxgloveWebSocketConnection conn : connections) {
             conn.advertiseAllUnadvertisedChannels();
@@ -174,6 +178,10 @@ public class FoxgloveWebSocketServer extends WebSocketServer {
         return false;
     }
 
+    public static int getStaticPort() {
+        return port;
+    }
+
     @Override
     public ServerHandshakeBuilder onWebsocketHandshakeReceivedAsServer(
             WebSocket conn, Draft draft, ClientHandshake request) throws InvalidDataException {
@@ -207,6 +215,7 @@ public class FoxgloveWebSocketServer extends WebSocketServer {
 
         FoxgloveWebSocketConnection newConnection = new FoxgloveWebSocketConnection(conn, channels);
         connections.add(newConnection);
+        FoxgloveDebugPanel.log("New Foxglove client connected: " + conn.getRemoteSocketAddress() + ", " + newConnection);
         newConnection.broadcastServerInfo();
         newConnection.advertiseAllUnadvertisedChannels();
     }
@@ -275,7 +284,7 @@ public class FoxgloveWebSocketServer extends WebSocketServer {
 
     @Override
     public void onStart() {
-        System.out.println("WebSocket server started, view robot data in Foxglove at: https://app.foxglove.dev/~/view?ds=foxglove-websocket&ds.url=ws://" + Util.getLocalIp() + ":5820");
+        System.out.println("WebSocket server started, view robot data in Foxglove at: https://app.foxglove.dev/~/view?ds=foxglove-websocket&ds.url=ws://" + Util.getLocalIp() + ":" + port);
     }
 
 //    public void broadcastJsonMessageOnChannel(String msg, int channelId) {
@@ -426,7 +435,15 @@ public class FoxgloveWebSocketServer extends WebSocketServer {
 //        advertise(id, topic, "", "");
 //    }
 
-    public void freeChannel(FoxgloveChannel<? extends FoxgloveLoggable> channel) {
+    public static void freeChannel(FoxgloveChannel<? extends FoxgloveLoggable> channel) {
         channels.remove(channel);
+    }
+
+    public static List<FoxgloveChannel<? extends FoxgloveLoggable>> getChannels() {
+        return channels;
+    }
+
+    public static List<FoxgloveWebSocketConnection> getFoxgloveConnections() {
+        return connections;
     }
 }

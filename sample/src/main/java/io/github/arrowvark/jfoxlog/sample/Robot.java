@@ -27,26 +27,26 @@ public class Robot extends LoggedRobot {
     public Robot() {
         _foxgloveServer = FoxgloveWebSocketServer.getInstance();
         _foxgloveHttpServer = FoxgloveHttpServer.getInstance();
-
-        // Set up pathfinding compatibility with AdvantageKit
-        Pathfinding.setPathfinder(new LocalADStarADK());
-
-        // Configure logging
-        DriverStation.silenceJoystickConnectionWarning(true);
+//
+//        // Set up pathfinding compatibility with AdvantageKit
+//        Pathfinding.setPathfinder(new LocalADStarADK());
+//
+//        // Configure logging
+//        DriverStation.silenceJoystickConnectionWarning(true);
 
         // Initialize the robot container
         Container.initialize();
 
         // Set up the dashboard
-        WebServer.start(5800, Filesystem.getDeployDirectory().getPath()); // Start the web server for downloading elastic layout from robot
-        Elastic.selectTab("Auto");
-        Preferences.removeAll();
+//        WebServer.start(5800, Filesystem.getDeployDirectory().getPath()); // Start the web server for downloading elastic layout from robot
+//        Elastic.selectTab("Auto");
+//        Preferences.removeAll();
     }
 
     @Override
     public void disabledInit() {
         DataLogManager.log("Robot disabled");
-        CommandScheduler.getInstance().schedule(Container.Swerve.disableAutoAlignCommand());
+//        CommandScheduler.getInstance().schedule(Container.Swerve.disableAutoAlignCommand());
     }
 
     /**

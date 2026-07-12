@@ -22,7 +22,8 @@ repositories {
 publishing {
     publications {
         create<MavenPublication>("mavenJava") {
-            artifactId = "JFoxLog"
+            artifactId = "jfoxlog"
+            from(components["java"])
         }
     }
 }
@@ -37,7 +38,7 @@ dependencies {
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 
     implementation("com.google.code.gson:gson:2.13.2")
-    implementation("org.java-websocket:Java-WebSocket:1.5.4")
+    api("org.java-websocket:Java-WebSocket:1.5.4")
     implementation("com.palantir.javapoet:javapoet:0.14.0")
 
     compileOnly("com.google.auto.service:auto-service:1.1.1")
@@ -48,6 +49,8 @@ dependencies {
     implementation("com.github.victools:jsonschema-module-jakarta-validation:4.36.0")
 
     implementation("net.bytebuddy:byte-buddy:1.18.8")
+
+    implementation("com.formdev:flatlaf:3.4")
 }
 
 tasks.test {

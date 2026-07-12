@@ -18,7 +18,7 @@ import io.github.arrowvark.jfoxlog.foxglove.types.time.Timestamp;
 public class FieldLogger {
     public static void init() {}
     static {
-        String url = FoxgloveHttpServer.serveFile("/field.glb", "/org/prime/models/field.glb");
+        String url = FoxgloveHttpServer.serveFile("/field.glb", "/io/github/arrowvark/jfoxlog/field.glb");
         FoxgloveWebSocketServer.requestNewChannel(
                 "Server/Scene/Field",
                 FoxgloveChannel.LoggingType.LOW_FREQUENCY_SERVER_DRIVEN_STATIC,
