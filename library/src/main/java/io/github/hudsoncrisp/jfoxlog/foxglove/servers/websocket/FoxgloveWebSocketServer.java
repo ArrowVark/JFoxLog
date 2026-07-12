@@ -27,7 +27,11 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Logger;
 
@@ -36,9 +40,18 @@ public class FoxgloveWebSocketServer extends WebSocketServer {
     private static final FoxgloveWebSocketServer INSTANCE;
     private static final int port = 5820;
 
+    private static final AtomicBoolean onStartRan = new AtomicBoolean(false);
+
     static { // Create instance
         INSTANCE = new FoxgloveWebSocketServer(port);
         INSTANCE.start();
+
+        ScheduledFuture<?> noStartWatchdog = Executors.newSingleThreadScheduledExecutor().schedule(() -> {
+            if (!onStartRan.get()) {
+                FoxgloveDebugPanel.log("onStart has not ran, even after the server instance was set to start", FoxgloveDebugLogSeverity.UNRECOVERABLE);
+                Logger.getGlobal().warning("The JFoxLog WebSocket server is taking longer to start than expected. If it does not start soon, try restarting your robot code");
+            }
+        }, 10, TimeUnit.SECONDS);
 
         FoxgloveDebugPanel.log("WebSocket server instance created", FoxgloveDebugLogSeverity.PRERUN);
     }
@@ -258,6 +271,8 @@ public class FoxgloveWebSocketServer extends WebSocketServer {
 
     @Override
     public void onStart() {
+        onStartRan.set(true);
+        FoxgloveDebugPanel.log("WebSocket server onStart method ran", FoxgloveDebugLogSeverity.EXPECTED);
         System.out.println("WebSocket server started, view robot data in Foxglove at: https://app.foxglove.dev/~/view?ds=foxglove-websocket&ds.url=ws://" + Util.getLocalIp() + ":" + port);
     }
 

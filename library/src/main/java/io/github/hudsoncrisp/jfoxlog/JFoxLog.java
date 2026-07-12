@@ -57,7 +57,7 @@ public class JFoxLog {
 
         runnable.run();
 
-        if (logPeriodicLoopTime) {
+        if (logLibraryComputeTime) {
             long endNano = System.nanoTime();
             libraryComputeTimeMillis = (double) (endNano - startNano) / 1000000;
             libraryComputeTimeNano = endNano - startNano;

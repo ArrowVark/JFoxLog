@@ -1,5 +1,6 @@
 package io.github.hudsoncrisp.jfoxlog.debug;
 
+import com.formdev.flatlaf.FlatDarkLaf;
 import io.github.hudsoncrisp.jfoxlog.JFoxLog;
 import io.github.hudsoncrisp.jfoxlog.foxglove.servers.Util;
 import io.github.hudsoncrisp.jfoxlog.foxglove.servers.websocket.FoxgloveChannel;
@@ -18,6 +19,8 @@ import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.StyledDocument;
 import java.awt.*;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.io.File;
 import java.lang.management.ManagementFactory;
 import java.lang.management.RuntimeMXBean;
@@ -29,6 +32,8 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import com.formdev.flatlaf.FlatLightLaf;
 
 public class FoxgloveDebugPanel {
+    private static boolean debug = false;
+
     private static JFrame frame;
     private static JPanel channelsPanel;
     private static JTextField channelsFilterField;
@@ -46,6 +51,7 @@ public class FoxgloveDebugPanel {
     private static final SimpleAttributeSet infoAttributeSet = new SimpleAttributeSet();
     private static final SimpleAttributeSet warnAttributeSet = new SimpleAttributeSet();
     private static final SimpleAttributeSet errorAttributeSet = new SimpleAttributeSet();
+    private static final SimpleAttributeSet unrecoverableAttributeSet = new SimpleAttributeSet();
     private static final SimpleAttributeSet fatalAttributeSet = new SimpleAttributeSet();
     static {
         StyleConstants.setForeground(prerunAttributeSet, Color.MAGENTA);
@@ -60,9 +66,25 @@ public class FoxgloveDebugPanel {
 
         StyleConstants.setForeground(errorAttributeSet, Color.RED);
 
+        StyleConstants.setForeground(unrecoverableAttributeSet, Color.RED);
+        StyleConstants.setBold(unrecoverableAttributeSet, true);
+
         StyleConstants.setForeground(fatalAttributeSet, Color.RED);
         StyleConstants.setBold(fatalAttributeSet, true);
     }
+    private static final String resetANSI = "\u001B[0m";
+    private static final String emptyANSI = "";
+    private static final String prerunANSI = "\u001B[3;35m";
+    private static final String debugANSI = "\u001B[32m";
+    private static final String expectedANSI = emptyANSI;
+    private static final String infoANSI = "\u001B[3;36m";
+    private static final String warnANSI = "\u001B[33m";
+    private static final String errorANSI = "\u001B[31m";
+    private static final String unrecoverableANSI = "\u001B[1;31m";
+    private static final String fatalANSI = "\u001B[1;31m";
+
+    private static final FlatLightLaf lightLaf = new FlatLightLaf();
+    private static final FlatDarkLaf darkLaf = new FlatDarkLaf();
 
     record StyledLog(String text, AttributeSet attributeSet) {}
     private static final CopyOnWriteArrayList<StyledLog> pendingLogs = new CopyOnWriteArrayList<>();
@@ -98,6 +120,8 @@ public class FoxgloveDebugPanel {
     }
 
     private static void build() {
+        debug = true;
+        log("JFoxLog debugging started", FoxgloveDebugLogSeverity.INFO);
         if (frame != null) {
             frame.setVisible(true);
             frame.toFront();
@@ -109,7 +133,7 @@ public class FoxgloveDebugPanel {
 //            UIManager.setLookAndFeel("com.sun.java.swing.plaf.gtk.GTKLookAndFeel");
 //            UIManager.setLookAndFeel("javax.swing.plaf.nimbus.NimbusLookAndFeel");
 //            UIManager.setLookAndFeel("com.sun.java.swing.plaf.motif.MotifLookAndFeel");
-            UIManager.setLookAndFeel(new FlatLightLaf());
+            UIManager.setLookAndFeel(lightLaf);
         } catch (Exception e) {
             log("Debug panel look and feel failed to be set", FoxgloveDebugLogSeverity.ERROR);
         }
@@ -121,15 +145,29 @@ public class FoxgloveDebugPanel {
                 "JFoxLog Debug - Logging at ws://" +
                         Util.getLocalIp() + ":" + FoxgloveWebSocketServer.getStaticPort()
         );
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 //        frame.setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
         frame.setSize(850, 480);
         frame.setLocationByPlatform(true);
-        frame.add(buildSplitPane());
+
+        JPanel panel = new JPanel(new BorderLayout());
+        panel.add(buildSplitPane());
+        panel.setBorder(new EmptyBorder(7, 7, 7, 7));
+
+        frame.add(panel);
         frame.setVisible(true);
+
+        frame.addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosing(WindowEvent e) {
+                super.windowClosing(e);
+                log("JFoxLog debugging ended", FoxgloveDebugLogSeverity.INFO);
+                debug = false;
+            }
+        });
         flushPendingLogs();
 
-        log("Built debug panel", FoxgloveDebugLogSeverity.INFO);
+        log("Built debug panel", FoxgloveDebugLogSeverity.EXPECTED);
     }
 
     private static JSplitPane buildSplitPane() {
@@ -282,8 +320,27 @@ public class FoxgloveDebugPanel {
 
         JButton clearButton = new JButton("Clear");
         clearButton.addActionListener(e -> logArea.setText(""));
-        JPanel topBar = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        topBar.add(clearButton);
+
+        JButton lightDarkButton = new JButton("Switch Light/Dark");
+        lightDarkButton.addActionListener(e -> {
+            try {
+                if (UIManager.getLookAndFeel() == lightLaf) {
+                    UIManager.setLookAndFeel(darkLaf);
+                    log("Switched debug panel look and feel to dark", FoxgloveDebugLogSeverity.INFO);
+                } else {
+                    UIManager.setLookAndFeel(lightLaf);
+                    log("Switched debug panel look and feel to light", FoxgloveDebugLogSeverity.INFO);
+                }
+                SwingUtilities.updateComponentTreeUI(frame);
+            } catch (Exception _e) {
+                log("Failed to switch look and feel", FoxgloveDebugLogSeverity.ERROR);
+            }
+        });
+
+        JPanel topBar = new JPanel(new BorderLayout());
+        topBar.setBorder(new EmptyBorder(7, 7, 7, 7));
+        topBar.add(clearButton, BorderLayout.WEST);
+        topBar.add(lightDarkButton, BorderLayout.EAST);
 
         JPanel panel = new JPanel(new BorderLayout());
         panel.add(topBar, BorderLayout.NORTH);
@@ -328,15 +385,32 @@ public class FoxgloveDebugPanel {
             case INFO -> attributeSet = infoAttributeSet;
             case WARN -> attributeSet = warnAttributeSet;
             case ERROR -> attributeSet = errorAttributeSet;
+            case UNRECOVERABLE -> attributeSet = unrecoverableAttributeSet;
             case FATAL -> attributeSet = fatalAttributeSet;
             default -> attributeSet = emptyAttributeSet;
         }
 
-        log("[" + severity + "] " + message, attributeSet);
+        log("[" + severity + "] " + message, attributeSet, severity);
     }
 
-    private static void log(String message, AttributeSet attributeSet) {
+    private static void log(String message, AttributeSet attributeSet, FoxgloveDebugLogSeverity severity) {
+
+        String prefix;
+
+        switch (severity) {
+            case PRERUN -> prefix = prerunANSI;
+            case DEBUG -> prefix = debugANSI;
+            case EXPECTED -> prefix = expectedANSI;
+            case INFO -> prefix = infoANSI;
+            case WARN -> prefix = warnANSI;
+            case ERROR -> prefix = errorANSI;
+            case UNRECOVERABLE -> prefix = unrecoverableANSI;
+            case FATAL -> prefix = fatalANSI;
+            default -> prefix = emptyANSI;
+        }
+
         String line = "[" + timeFormat.format(new Date()) + "] " + message;
+        if (debug) System.out.println(prefix + "[JFoxLog Debug] " + line + resetANSI);
         if (logArea == null || logAreaStyleDoc == null) {
             pendingLogs.add(new StyledLog(line, attributeSet));
             return;

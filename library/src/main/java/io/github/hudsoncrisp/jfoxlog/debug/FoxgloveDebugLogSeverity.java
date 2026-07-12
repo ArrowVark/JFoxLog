@@ -7,5 +7,6 @@ public enum FoxgloveDebugLogSeverity {
     INFO,
     WARN,
     ERROR,
+    UNRECOVERABLE,
     FATAL
 }
