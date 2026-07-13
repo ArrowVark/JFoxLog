@@ -127,14 +127,14 @@ public class JChannelDebugPanel extends JComponent {
         JButton reloadCache = new JButton("Reload Cache");
         reloadCache.addActionListener(e -> {
             cacheTextArea.setText(channel.requestCache());
-            FoxgloveDebugPanel.log("Reloaded cache for \"" + channel.getTopic() + "\"", FoxgloveDebugLogSeverity.INFO);
+            FoxgloveDebugPanel.log("Reloaded cache for \"" + channel.getTopic() + "\"", FoxgloveDebugLogMeta.Severity.INFO);
         });
         buttonPanel.add(reloadCache);
 
         JButton fetchData = new JButton("Fetch Data");
         fetchData.addActionListener(e -> {
             channel.requestData();
-            FoxgloveDebugPanel.log("Fetched new data for \"" + channel.getTopic() + "\"", FoxgloveDebugLogSeverity.INFO);
+            FoxgloveDebugPanel.log("Fetched new data for \"" + channel.getTopic() + "\"", FoxgloveDebugLogMeta.Severity.INFO);
         });
         buttonPanel.add(fetchData);
         panel.add(buttonPanel, BorderLayout.SOUTH);
@@ -222,7 +222,7 @@ public class JChannelDebugPanel extends JComponent {
     }
 
     private void setupLoggingTypeEntry() {
-        contentTableModel.addRow(new Object[]{"Logging Type:", channel.getLoggingType()});
+        contentTableModel.addRow(new Object[]{"Logging Type:", channel.getLoggingFrequencyInfo()});
     }
 
     private void setupIdEntry() {

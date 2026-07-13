@@ -103,11 +103,11 @@ public class FoxgloveDebugPanel {
     public static void show() {
         if (SwingUtilities.isEventDispatchThread()) {
             build();
-            log("Debug panel shown", FoxgloveDebugLogSeverity.INFO);
+            log("Debug panel shown", FoxgloveDebugLogMeta.Severity.INFO);
         } else {
             SwingUtilities.invokeLater(() -> {
                 build();
-                log("Debug panel shown", FoxgloveDebugLogSeverity.INFO);
+                log("Debug panel shown", FoxgloveDebugLogMeta.Severity.INFO);
             });
         }
     }
@@ -116,12 +116,12 @@ public class FoxgloveDebugPanel {
         if (frame != null) {
             SwingUtilities.invokeLater(() -> frame.setVisible(false));
         }
-        log("Debug panel hidden", FoxgloveDebugLogSeverity.INFO);
+        log("Debug panel hidden", FoxgloveDebugLogMeta.Severity.INFO);
     }
 
     private static void build() {
         debug = true;
-        log("JFoxLog debugging started", FoxgloveDebugLogSeverity.INFO);
+        log("JFoxLog debugging started", FoxgloveDebugLogMeta.Severity.INFO);
         if (frame != null) {
             frame.setVisible(true);
             frame.toFront();
@@ -135,7 +135,7 @@ public class FoxgloveDebugPanel {
 //            UIManager.setLookAndFeel("com.sun.java.swing.plaf.motif.MotifLookAndFeel");
             UIManager.setLookAndFeel(lightLaf);
         } catch (Exception e) {
-            log("Debug panel look and feel failed to be set", FoxgloveDebugLogSeverity.ERROR);
+            log("Debug panel look and feel failed to be set", FoxgloveDebugLogMeta.Severity.ERROR);
         }
 
         JFoxLog.logLibraryComputeTime(true);
@@ -161,13 +161,13 @@ public class FoxgloveDebugPanel {
             @Override
             public void windowClosing(WindowEvent e) {
                 super.windowClosing(e);
-                log("JFoxLog debugging ended", FoxgloveDebugLogSeverity.INFO);
+                log("JFoxLog debugging ended", FoxgloveDebugLogMeta.Severity.INFO);
                 debug = false;
             }
         });
         flushPendingLogs();
 
-        log("Built debug panel", FoxgloveDebugLogSeverity.EXPECTED);
+        log("Built debug panel", FoxgloveDebugLogMeta.Severity.INFO, FoxgloveDebugLogMeta.Tag.EXPECTED);
     }
 
     private static JSplitPane buildSplitPane() {
@@ -176,7 +176,7 @@ public class FoxgloveDebugPanel {
         pane.setLeftComponent(buildTabPane());
         pane.setRightComponent(buildLogComponent());
 
-        log("Built split pane", FoxgloveDebugLogSeverity.EXPECTED);
+        log("Built split pane", FoxgloveDebugLogMeta.Severity.INFO, FoxgloveDebugLogMeta.Tag.EXPECTED);
         return pane;
     }
 
@@ -187,7 +187,7 @@ public class FoxgloveDebugPanel {
         pane.addTab("Files", buildFilesComponent());
         pane.addTab("Statistics", buildStatsComponent());
 
-        log("Built tab pane", FoxgloveDebugLogSeverity.EXPECTED);
+        log("Built tab pane", FoxgloveDebugLogMeta.Severity.INFO, FoxgloveDebugLogMeta.Tag.EXPECTED);
         return pane;
     }
 
@@ -229,7 +229,7 @@ public class FoxgloveDebugPanel {
         panel.add(scrollPane, BorderLayout.CENTER);
 
         filterChannels("");
-        log("Built channels component", FoxgloveDebugLogSeverity.EXPECTED);
+        log("Built channels component", FoxgloveDebugLogMeta.Severity.INFO, FoxgloveDebugLogMeta.Tag.EXPECTED);
         return panel;
     }
 
@@ -245,7 +245,7 @@ public class FoxgloveDebugPanel {
         scrollPane.setBorder(BorderFactory.createEmptyBorder());
 
         reloadConnections();
-        log("Built connections component", FoxgloveDebugLogSeverity.EXPECTED);
+        log("Built connections component", FoxgloveDebugLogMeta.Severity.INFO, FoxgloveDebugLogMeta.Tag.EXPECTED);
         addConnectionDebug(null);
         return scrollPane;
     }
@@ -306,7 +306,7 @@ public class FoxgloveDebugPanel {
         scrollPane.setBorder(BorderFactory.createEmptyBorder());
 
         reloadConnections();
-        log("Built files component", FoxgloveDebugLogSeverity.EXPECTED);
+        log("Built files component", FoxgloveDebugLogMeta.Severity.INFO, FoxgloveDebugLogMeta.Tag.EXPECTED);
         addFileDebug(null);
         return scrollPane;
     }
@@ -326,14 +326,14 @@ public class FoxgloveDebugPanel {
             try {
                 if (UIManager.getLookAndFeel() == lightLaf) {
                     UIManager.setLookAndFeel(darkLaf);
-                    log("Switched debug panel look and feel to dark", FoxgloveDebugLogSeverity.INFO);
+                    log("Switched debug panel look and feel to dark", FoxgloveDebugLogMeta.Severity.INFO);
                 } else {
                     UIManager.setLookAndFeel(lightLaf);
-                    log("Switched debug panel look and feel to light", FoxgloveDebugLogSeverity.INFO);
+                    log("Switched debug panel look and feel to light", FoxgloveDebugLogMeta.Severity.INFO);
                 }
                 SwingUtilities.updateComponentTreeUI(frame);
             } catch (Exception _e) {
-                log("Failed to switch look and feel", FoxgloveDebugLogSeverity.ERROR);
+                log("Failed to switch look and feel", FoxgloveDebugLogMeta.Severity.ERROR);
             }
         });
 
@@ -346,7 +346,7 @@ public class FoxgloveDebugPanel {
         panel.add(topBar, BorderLayout.NORTH);
         panel.add(new JScrollPane(logArea), BorderLayout.CENTER);
 
-        log("Built log component", FoxgloveDebugLogSeverity.EXPECTED);
+        log("Built log component", FoxgloveDebugLogMeta.Severity.INFO, FoxgloveDebugLogMeta.Tag.EXPECTED);
         return panel;
     }
 
@@ -374,37 +374,43 @@ public class FoxgloveDebugPanel {
         channelsPanel.repaint();
     }
 
-    public static void log(String message, FoxgloveDebugLogSeverity severity) {
+    public static void log(String message, FoxgloveDebugLogMeta.Severity severity, FoxgloveDebugLogMeta.Tag... tags) {
 
         AttributeSet attributeSet;
 
         switch (severity) {
-            case PRERUN -> attributeSet = prerunAttributeSet;
+//            case PRERUN -> attributeSet = prerunAttributeSet;
             case DEBUG -> attributeSet = debugAttributeSet;
-            case EXPECTED -> attributeSet = expectedAttributeSet;
+//            case EXPECTED -> attributeSet = expectedAttributeSet;
             case INFO -> attributeSet = infoAttributeSet;
             case WARN -> attributeSet = warnAttributeSet;
             case ERROR -> attributeSet = errorAttributeSet;
-            case UNRECOVERABLE -> attributeSet = unrecoverableAttributeSet;
+//            case UNRECOVERABLE -> attributeSet = unrecoverableAttributeSet;
             case FATAL -> attributeSet = fatalAttributeSet;
             default -> attributeSet = emptyAttributeSet;
         }
 
-        log("[" + severity + "] " + message, attributeSet, severity);
+        StringBuilder tagsString = new StringBuilder();
+
+        for (FoxgloveDebugLogMeta.Tag tag : tags) {
+            tagsString.append("[").append(tag).append("] ");
+        }
+
+        log("[" + severity + "] " + tagsString + message, attributeSet, severity);
     }
 
-    private static void log(String message, AttributeSet attributeSet, FoxgloveDebugLogSeverity severity) {
+    private static void log(String message, AttributeSet attributeSet, FoxgloveDebugLogMeta.Severity severity) {
 
         String prefix;
 
         switch (severity) {
-            case PRERUN -> prefix = prerunANSI;
+//            case PRERUN -> prefix = prerunANSI;
             case DEBUG -> prefix = debugANSI;
-            case EXPECTED -> prefix = expectedANSI;
+//            case EXPECTED -> prefix = expectedANSI;
             case INFO -> prefix = infoANSI;
             case WARN -> prefix = warnANSI;
             case ERROR -> prefix = errorANSI;
-            case UNRECOVERABLE -> prefix = unrecoverableANSI;
+//            case UNRECOVERABLE -> prefix = unrecoverableANSI;
             case FATAL -> prefix = fatalANSI;
             default -> prefix = emptyANSI;
         }
@@ -436,13 +442,13 @@ public class FoxgloveDebugPanel {
         }
         pendingLogs.clear();
         logArea.setCaretPosition(logArea.getDocument().getLength());
-        log("Flushed pending logs", FoxgloveDebugLogSeverity.INFO);
+        log("Flushed pending logs", FoxgloveDebugLogMeta.Severity.INFO);
     }
 
     public static void addChannelDebug(String name, FoxgloveChannel<?> channel) {
         JChannelDebugPanel panel = new JChannelDebugPanel(name, channel);
         registerChannelDebug(panel);
-        log("Registered channel \"" + name + "\"", FoxgloveDebugLogSeverity.INFO);
+        log("Registered channel \"" + name + "\"", FoxgloveDebugLogMeta.Severity.INFO);
     }
 
     private static void registerChannelDebug(JChannelDebugPanel channelPanel) {
@@ -488,7 +494,7 @@ public class FoxgloveDebugPanel {
         setupPeriodicLoopTimeStat(panel);
         panel.add(table);
 
-        log("Built statistics panel", FoxgloveDebugLogSeverity.EXPECTED);
+        log("Built statistics panel", FoxgloveDebugLogMeta.Severity.INFO, FoxgloveDebugLogMeta.Tag.EXPECTED);
         return panel;
     }
 

@@ -2,6 +2,7 @@ package io.github.hudsoncrisp.jfoxlog.defaults.topics;
 
 import io.github.hudsoncrisp.jfoxlog.foxglove.servers.http.FoxgloveHttpServer;
 import io.github.hudsoncrisp.jfoxlog.foxglove.servers.websocket.FoxgloveChannel;
+import io.github.hudsoncrisp.jfoxlog.foxglove.servers.websocket.FoxgloveLoggingFrequencyInfo;
 import io.github.hudsoncrisp.jfoxlog.foxglove.servers.websocket.FoxgloveWebSocketServer;
 import io.github.hudsoncrisp.jfoxlog.foxglove.types.geometry.Quaternion;
 import io.github.hudsoncrisp.jfoxlog.foxglove.types.geometry.pose.Pose;
@@ -21,7 +22,7 @@ public class FieldLogger {
         String url = FoxgloveHttpServer.serveFile("/field.glb", "/io/github/hudsoncrisp/jfoxlog/field.glb");
         FoxgloveWebSocketServer.requestNewChannel(
                 "Server/Scene/Field",
-                FoxgloveChannel.LoggingType.LOW_FREQUENCY_SERVER_DRIVEN_STATIC,
+                FoxgloveLoggingFrequencyInfo.fromHertzFrequency(0.5, FoxgloveLoggingFrequencyInfo.DataRetrieveType.CACHE),
                 new SceneUpdate(
                         new SceneEntityDeletion[0],
                         new SceneEntity[]{

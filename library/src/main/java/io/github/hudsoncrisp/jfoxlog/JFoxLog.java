@@ -1,12 +1,12 @@
 package io.github.hudsoncrisp.jfoxlog;
 
-import io.github.hudsoncrisp.jfoxlog.debug.FoxgloveDebugLogSeverity;
+import io.github.hudsoncrisp.jfoxlog.debug.FoxgloveDebugLogMeta;
 import io.github.hudsoncrisp.jfoxlog.debug.FoxgloveDebugPanel;
 import io.github.hudsoncrisp.jfoxlog.foxglove.servers.websocket.FoxgloveWebSocketServer;
 
 public class JFoxLog {
     static {
-        FoxgloveDebugPanel.log("Base JFoxLog class loaded", FoxgloveDebugLogSeverity.PRERUN);
+        FoxgloveDebugPanel.log("Base JFoxLog class loaded", FoxgloveDebugLogMeta.Severity.INFO, FoxgloveDebugLogMeta.Tag.EXPECTED, FoxgloveDebugLogMeta.Tag.PRERUN);
     }
 
     private static boolean periodicRan = false;
@@ -42,7 +42,7 @@ public class JFoxLog {
     public static void periodic() {
         if (!periodicRan) {
             periodicRan = true;
-            FoxgloveDebugPanel.log("First periodic call", FoxgloveDebugLogSeverity.INFO);
+            FoxgloveDebugPanel.log("First periodic call", FoxgloveDebugLogMeta.Severity.INFO);
         }
         timeDebugWrapper(FoxgloveWebSocketServer::periodic);
     }
@@ -51,7 +51,7 @@ public class JFoxLog {
         long startNano = 0;
         if (logPeriodicLoopTime || logLibraryComputeTime) startNano = System.nanoTime();
         if (logPeriodicLoopTime) {
-            periodicLoopTimeMillis = (double) (startNano - periodicLoopTimestampNano) / 1000000;
+            periodicLoopTimeMillis = (double) (startNano - periodicLoopTimestampNano) / 1_000_000L;
             periodicLoopTimestampNano = startNano;
         }
 
@@ -59,7 +59,7 @@ public class JFoxLog {
 
         if (logLibraryComputeTime) {
             long endNano = System.nanoTime();
-            libraryComputeTimeMillis = (double) (endNano - startNano) / 1000000;
+            libraryComputeTimeMillis = (double) (endNano - startNano) / 1_000_000L;
             libraryComputeTimeNano = endNano - startNano;
         }
     }

@@ -13,6 +13,7 @@ import io.github.hudsoncrisp.jfoxlog.annotation.LoggingParameters;
 import io.github.hudsoncrisp.jfoxlog.annotation.Util;
 import io.github.hudsoncrisp.jfoxlog.foxglove.*;
 import io.github.hudsoncrisp.jfoxlog.foxglove.servers.websocket.FoxgloveChannel;
+import io.github.hudsoncrisp.jfoxlog.foxglove.servers.websocket.FoxgloveLoggingFrequencyInfo;
 
 import javax.annotation.processing.*;
 import javax.lang.model.SourceVersion;
@@ -272,39 +273,17 @@ public class GenerateFoxgloveLoggableProcessor extends AbstractProcessor {
                         if (field.asType().getKind() == TypeKind.DECLARED) {
                             TypeElement typeElement = (TypeElement) ((DeclaredType) field.asType()).asElement();
                             String qualifiedName = typeElement.getQualifiedName().toString();
-                            FoxgloveChannel.LoggingType loggingType = FoxgloveChannel.LoggingType.SERVER_DRIVEN;
+                            double millisecondLead = 0;
+                            FoxgloveLoggingFrequencyInfo.DataRetrieveType dataRetrieveType = FoxgloveLoggingFrequencyInfo.DataRetrieveType.NEW_DATA;
 
                             if (loggingParameters != null) {
-                                loggingType = loggingParameters.loggingType() != null
-                                        ? loggingParameters.loggingType()
-                                        : FoxgloveChannel.LoggingType.SERVER_DRIVEN;
+                                millisecondLead = loggingParameters.millisecondLead();
+                                if (loggingParameters.dataRetrieveType() != null) {
+                                    dataRetrieveType = loggingParameters.dataRetrieveType();
+                                }
                             }
 
-
-
-//                            switch (qualifiedName) {
-//                                case "edu.wpi.first.math.geometry.Rotation2d":
-//                                    fieldSpec = FieldSpec
-//                                            .builder(double.class, simpleName)
-//                                            .initializer(outerRef + simpleName + ".getRadians()")
-//                                            .build();
-//                                    getStatement = simpleName + " = " + outerRef + simpleName + ".getRadians()";
-//                            }
-//
-//                            for (TypeMirror inter : typeElement.getInterfaces()) {
-//                                if (inter.getKind() == TypeKind.DECLARED) {
-//                                    TypeElement interElement = (TypeElement) ((DeclaredType) inter).asElement();
-//                                    if (interElement.getQualifiedName().toString().equals("edu.wpi.first.units.Measure")) {
-//                                        fieldSpec = FieldSpec
-//                                                .builder(double.class, simpleName)
-//                                                .initializer(outerRef + simpleName + ".baseUnitMagnitude()")
-//                                                .build();
-//                                        getStatement = simpleName + " = " + outerRef + simpleName + ".baseUnitMagnitude()";
-//                                    }
-//                                }
-//                            }
-
-                            Util.processComplexTypes(field, loggingType, simpleName, generatedClassBuilder, get, setupChildObjectsBuilder);
+                            Util.processComplexTypes(field, millisecondLead, dataRetrieveType, simpleName, generatedClassBuilder, get, setupChildObjectsBuilder);
                         }
 
                         loggedFieldsClass.addField(fieldSpec);

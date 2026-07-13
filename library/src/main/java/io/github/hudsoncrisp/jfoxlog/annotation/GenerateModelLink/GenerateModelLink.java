@@ -1,6 +1,7 @@
 package io.github.hudsoncrisp.jfoxlog.annotation.GenerateModelLink;
 
 import io.github.hudsoncrisp.jfoxlog.foxglove.servers.websocket.FoxgloveChannel;
+import io.github.hudsoncrisp.jfoxlog.foxglove.servers.websocket.FoxgloveLoggingFrequencyInfo;
 
 public @interface GenerateModelLink {
     /**
@@ -11,5 +12,5 @@ public @interface GenerateModelLink {
     /**
      * The logging type which
      */
-    FoxgloveChannel.LoggingType loggingType() default FoxgloveChannel.LoggingType.LOW_FREQUENCY_SERVER_DRIVEN_STATIC;
+//    FoxgloveLoggingFrequencyInfo loggingFrequencyInfo();
 }

@@ -3,6 +3,7 @@ package io.github.hudsoncrisp.jfoxlog.annotation;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.palantir.javapoet.*;
+import io.github.hudsoncrisp.jfoxlog.foxglove.servers.websocket.FoxgloveLoggingFrequencyInfo;
 import net.bytebuddy.ByteBuddy;
 import net.bytebuddy.description.modifier.FieldManifestation;
 import net.bytebuddy.description.modifier.Visibility;
@@ -270,14 +271,23 @@ public class Util {
         return null;
     }
 
-    public static void processComplexTypes(Element field, FoxgloveChannel.LoggingType loggingType, String simpleName, TypeSpec.Builder generatedClass, MethodSpec.Builder getMethod, MethodSpec.Builder setupChildObjectsBuilder) {
+    public static void processComplexTypes(
+            Element field,
+            double millisecondLead,
+            FoxgloveLoggingFrequencyInfo.DataRetrieveType dataRetrieveType,
+            String simpleName,
+            TypeSpec.Builder generatedClass,
+            MethodSpec.Builder getMethod,
+            MethodSpec.Builder setupChildObjectsBuilder
+    ) {
 
         var frameTransformAnnotation = field.getAnnotation(FrameTransform.class);
 
         if (frameTransformAnnotation != null) {
             createComplexChannelAndSetup(
                     simpleName,
-                    loggingType,
+                    millisecondLead,
+                    dataRetrieveType,
                     generatedClass,
                     getMethod,
                     setupChildObjectsBuilder,
@@ -304,13 +314,14 @@ public class Util {
 
         if (foxgloveType != null) {
             createComplexChannelAndSetup(
-                    simpleName, loggingType, generatedClass, getMethod, setupChildObjectsBuilder, foxgloveType, "$T.from(" + simpleName + ")");
+                    simpleName, millisecondLead, dataRetrieveType, generatedClass, getMethod, setupChildObjectsBuilder, foxgloveType, "$T.from(" + simpleName + ")");
         }
     }
 
     private static void createComplexChannelAndSetup(
             String simpleName,
-            FoxgloveChannel.LoggingType loggingType,
+            double millisecondLead,
+            FoxgloveLoggingFrequencyInfo.DataRetrieveType dataRetrieveType,
             TypeSpec.Builder generatedClass,
             MethodSpec.Builder getMethod,
             MethodSpec.Builder setupChildObjectsBuilder,
@@ -349,7 +360,8 @@ public class Util {
         setupChildObjectsBuilder
                 .addStatement(
                         loggableObjectName + ".setupLogging(parentTopic + \"/" + simpleName + "\"," +
-                                "$T.$L)", FoxgloveChannel.LoggingType.class, loggingType.name()
+                                "$T.$L)", FoxgloveLoggingFrequencyInfo.class,
+                        FoxgloveLoggingFrequencyInfo.fromMillisecondLead(millisecondLead, dataRetrieveType)
                 );
 
     }

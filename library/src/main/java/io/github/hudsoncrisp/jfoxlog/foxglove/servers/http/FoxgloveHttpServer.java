@@ -1,7 +1,8 @@
 package io.github.hudsoncrisp.jfoxlog.foxglove.servers.http;
 
 import com.sun.net.httpserver.HttpServer;
-import io.github.hudsoncrisp.jfoxlog.debug.FoxgloveDebugLogSeverity;
+import io.github.hudsoncrisp.jfoxlog.debug.FoxgloveDebugLogMeta;
+import io.github.hudsoncrisp.jfoxlog.debug.FoxgloveDebugLogMeta.Severity;
 import io.github.hudsoncrisp.jfoxlog.debug.FoxgloveDebugPanel;
 import io.github.hudsoncrisp.jfoxlog.foxglove.servers.Util;
 
@@ -20,7 +21,7 @@ public class FoxgloveHttpServer {
         INSTANCE = new FoxgloveHttpServer(port);
         INSTANCE.start();
 
-        FoxgloveDebugPanel.log("Http server instance created", FoxgloveDebugLogSeverity.PRERUN);
+        FoxgloveDebugPanel.log("Http server instance created", FoxgloveDebugLogMeta.Severity.INFO, FoxgloveDebugLogMeta.Tag.EXPECTED, FoxgloveDebugLogMeta.Tag.PRERUN);
     }
 
     private FoxgloveHttpServer(int port) {

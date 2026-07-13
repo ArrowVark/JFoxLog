@@ -1,10 +1,11 @@
 package io.github.hudsoncrisp.jfoxlog.foxglove.servers.websocket;
 
 import com.google.gson.JsonObject;
+import io.github.hudsoncrisp.jfoxlog.debug.FoxgloveDebugLogMeta;
+import io.github.hudsoncrisp.jfoxlog.debug.FoxgloveDebugPanel;
 import org.java_websocket.WebSocket;
 import io.github.hudsoncrisp.jfoxlog.foxglove.FoxgloveLoggable;
 
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -37,15 +38,24 @@ public class FoxgloveWebSocketConnection {
 
         FoxgloveChannel<?> channel = channelIdToChannel.get(channelId);
 
-        if (channels.get(channel) && channel.getLoggingType() == FoxgloveChannel.LoggingType.LOW_FREQUENCY_SERVER_DRIVEN) {
-            connection.send(
-                    FoxgloveWebSocketServer.buildMessage(channel.requestData(), subscriptionId)
-            );
-        } else if (channels.get(channel) && channel.getLoggingType() == FoxgloveChannel.LoggingType.LOW_FREQUENCY_SERVER_DRIVEN_STATIC) {
-            connection.send(
-                    FoxgloveWebSocketServer.buildMessage(channel.requestCache(), subscriptionId)
-            );
+        if (channels.get(channel) == null) return;
+
+        FoxgloveLoggingFrequencyInfo loggingFrequencyInfo = channel.getLoggingFrequencyInfo();
+        FoxgloveLoggingFrequencyInfo.DataRetrieveType dataRetrieveType = loggingFrequencyInfo.getDataRetrieveType();
+
+        String data;
+
+        if (dataRetrieveType == FoxgloveLoggingFrequencyInfo.DataRetrieveType.CACHE) {
+            data = channel.requestCache();
+        } else if (dataRetrieveType == FoxgloveLoggingFrequencyInfo.DataRetrieveType.NEW_DATA) {
+            data = channel.requestData();
+        } else {
+            data = channel.requestData();
         }
+
+        connection.send(
+                FoxgloveWebSocketServer.buildMessage(data, subscriptionId)
+        );
     }
 
     public void unsubscribe(int subscriptionId) {
@@ -72,25 +82,26 @@ public class FoxgloveWebSocketConnection {
 
     public void broadcastAllServerDrivenChannels() {
 
-        // Check if we should log the lower frequency topics too
-        boolean logAll = lowerFrequencyCounter.decrementAndGet() <= 0;
-
-        if (logAll) {
-            lowerFrequencyCounter.set(100);
-        }
-
         // Pass 1: Data Pass
         Map<FoxgloveChannel<? extends FoxgloveLoggable>, String> dataCache = new HashMap<>();
         channels.forEach((channel, hasAdvertised) -> {
-            boolean baseCase = hasAdvertised && channel.getLoggingType() == FoxgloveChannel.LoggingType.SERVER_DRIVEN;
-            boolean dataCase = baseCase || (logAll && channel.getLoggingType() == FoxgloveChannel.LoggingType.LOW_FREQUENCY_SERVER_DRIVEN);
-            boolean cacheCase = baseCase || (logAll && channel.getLoggingType() == FoxgloveChannel.LoggingType.LOW_FREQUENCY_SERVER_DRIVEN_STATIC);
 
-            if (dataCase) {
-                dataCache.put(channel, channel.requestData());
-            } else if (cacheCase) {
-                dataCache.put(channel, channel.requestCache());
+            FoxgloveLoggingFrequencyInfo loggingFrequencyInfo = channel.getLoggingFrequencyInfo();
+            if (!loggingFrequencyInfo.hasSurpassedLeadTime()) return;
+
+            FoxgloveLoggingFrequencyInfo.DataRetrieveType dataRetrieveType = loggingFrequencyInfo.getDataRetrieveType();
+
+            String data;
+
+            if (dataRetrieveType == FoxgloveLoggingFrequencyInfo.DataRetrieveType.CACHE) {
+                data = channel.requestCache();
+            } else if (dataRetrieveType == FoxgloveLoggingFrequencyInfo.DataRetrieveType.NEW_DATA) {
+                data = channel.requestData();
+            } else {
+                data = channel.requestData();
             }
+
+            dataCache.put(channel, data);
         });
 
         // Pass 2: Broadcast Pass
@@ -101,8 +112,6 @@ public class FoxgloveWebSocketConnection {
             connection.send(
                     FoxgloveWebSocketServer.buildMessage(data, subscriptionId)
             );
-
-            System.out.println("Broadcast All Server Driven Channels: " + new String(FoxgloveWebSocketServer.buildMessage(data, subscriptionId).array(), StandardCharsets.UTF_8));
         });
     }
 
@@ -118,11 +127,6 @@ public class FoxgloveWebSocketConnection {
                             subscriptionId
                     )
             );
-
-            System.out.println("Broadcast Channel: " + FoxgloveWebSocketServer.buildMessage(
-                    channel.requestData(),
-                    subscriptionId
-            ));
         }
     }
 
@@ -132,7 +136,6 @@ public class FoxgloveWebSocketConnection {
 
     public void broadcastServerInfo() {
         connection.send(FoxgloveWebSocketServer.SERVER_INFO_STRING);
-        System.out.println("Broadcast Server Info: " + FoxgloveWebSocketServer.SERVER_INFO_STRING);
     }
 
     public List<FoxgloveChannel<? extends FoxgloveLoggable>> unadvertisedChannels() {

@@ -1,6 +1,7 @@
 package io.github.hudsoncrisp.jfoxlog.foxglove;
 
 import io.github.hudsoncrisp.jfoxlog.foxglove.servers.websocket.FoxgloveChannel;
+import io.github.hudsoncrisp.jfoxlog.foxglove.servers.websocket.FoxgloveLoggingFrequencyInfo;
 import io.github.hudsoncrisp.jfoxlog.foxglove.servers.websocket.FoxgloveWebSocketServer;
 import io.github.hudsoncrisp.jfoxlog.foxglove.util.DynamicFoxgloveLoggable;
 
@@ -39,12 +40,12 @@ public interface FoxgloveLoggable {
      * Automatically logs this loggable object on a new channel. Automatically updates over time.
      *
      * @param topic The topic which the loggable object should be logged to (ex. "Robot/Subsystems/Swerve")
-     * @param loggingType How the channel should handle logging the object
+     * @param loggingFrequencyInfo How the channel should handle logging the object
      * @return This object
      */
-    default FoxgloveLoggable setupLogging(String topic, FoxgloveChannel.LoggingType loggingType) {
+    default FoxgloveLoggable setupLogging(String topic, FoxgloveLoggingFrequencyInfo loggingFrequencyInfo) {
         setupChildObjects(topic);
-        FoxgloveWebSocketServer.requestNewChannel(topic, loggingType, this);
+        FoxgloveWebSocketServer.requestNewChannel(topic, loggingFrequencyInfo, this);
         return this;
     }
 
@@ -56,7 +57,7 @@ public interface FoxgloveLoggable {
      * @return This object
      */
     default FoxgloveLoggable setupLogging(String topic) {
-        return setupLogging(topic, FoxgloveChannel.LoggingType.SERVER_DRIVEN);
+        return setupLogging(topic, FoxgloveLoggingFrequencyInfo.NO_LEAD);
     }
 
     default DynamicFoxgloveLoggable<? extends FoxgloveLoggable> makeDynamic() {

@@ -4,7 +4,8 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-import io.github.hudsoncrisp.jfoxlog.debug.FoxgloveDebugLogSeverity;
+import io.github.hudsoncrisp.jfoxlog.debug.FoxgloveDebugLogMeta;
+import io.github.hudsoncrisp.jfoxlog.debug.FoxgloveDebugLogMeta.Severity;
 import io.github.hudsoncrisp.jfoxlog.debug.FoxgloveDebugPanel;
 import org.java_websocket.WebSocket;
 import org.java_websocket.drafts.Draft;
@@ -33,6 +34,7 @@ import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class FoxgloveWebSocketServer extends WebSocketServer {
@@ -46,14 +48,21 @@ public class FoxgloveWebSocketServer extends WebSocketServer {
         INSTANCE = new FoxgloveWebSocketServer(port);
         INSTANCE.start();
 
-        ScheduledFuture<?> noStartWatchdog = Executors.newSingleThreadScheduledExecutor().schedule(() -> {
+        Executors.newSingleThreadScheduledExecutor().schedule(() -> {
             if (!onStartRan.get()) {
-                FoxgloveDebugPanel.log("onStart has not ran, even after the server instance was set to start", FoxgloveDebugLogSeverity.UNRECOVERABLE);
+                FoxgloveDebugPanel.log("WebSocket server is taking longer to start than expected", Severity.WARN);
                 Logger.getGlobal().warning("The JFoxLog WebSocket server is taking longer to start than expected. If it does not start soon, try restarting your robot code");
             }
-        }, 10, TimeUnit.SECONDS);
+        }, 4, TimeUnit.SECONDS);
 
-        FoxgloveDebugPanel.log("WebSocket server instance created", FoxgloveDebugLogSeverity.PRERUN);
+        Executors.newSingleThreadScheduledExecutor().schedule(() -> {
+            if (!onStartRan.get()) {
+                FoxgloveDebugPanel.log("onStart has not ran, even after the server instance was set to start", Severity.FATAL, FoxgloveDebugLogMeta.Tag.UNRECOVERABLE);
+                Logger.getGlobal().severe("The JFoxLog WebSocket server has not started after an extended period of time, try restarting your robot code.");
+            }
+        }, 15, TimeUnit.SECONDS);
+
+        FoxgloveDebugPanel.log("WebSocket server instance created", Severity.INFO, FoxgloveDebugLogMeta.Tag.EXPECTED, FoxgloveDebugLogMeta.Tag.PRERUN);
     }
 
     private static String NAME = "FRC Robot Server";
@@ -148,8 +157,10 @@ public class FoxgloveWebSocketServer extends WebSocketServer {
         INSTANCE.runFullAdvertisementCheck();
     }
 
-    public static <T extends FoxgloveLoggable> FoxgloveChannel<T> requestNewChannel(String topic, FoxgloveChannel.LoggingType loggingType, T loggable) {
-        var channel = new FoxgloveChannel<>(highestUsedId.incrementAndGet(), topic, loggingType, loggable);
+    public static <T extends FoxgloveLoggable> FoxgloveChannel<T> requestNewChannel(
+            String topic, FoxgloveLoggingFrequencyInfo loggingFrequencyInfo, T loggable
+    ) {
+        var channel = new FoxgloveChannel<>(highestUsedId.incrementAndGet(), topic, loggingFrequencyInfo, loggable);
         registerChannel(channel);
 
         return channel;
@@ -208,7 +219,7 @@ public class FoxgloveWebSocketServer extends WebSocketServer {
 
         FoxgloveWebSocketConnection newConnection = new FoxgloveWebSocketConnection(conn, channels);
         connections.add(newConnection);
-        FoxgloveDebugPanel.log("New Foxglove client connected: " + conn.getRemoteSocketAddress() + ", " + newConnection, FoxgloveDebugLogSeverity.INFO);
+        FoxgloveDebugPanel.log("New Foxglove client connected: " + conn.getRemoteSocketAddress() + ", " + newConnection, FoxgloveDebugLogMeta.Severity.INFO);
         newConnection.broadcastServerInfo();
         newConnection.advertiseAllUnadvertisedChannels();
     }
@@ -241,6 +252,7 @@ public class FoxgloveWebSocketServer extends WebSocketServer {
         }
 
         if (targetConnection == null) {
+            FoxgloveDebugPanel.log("Received a message from a unknown client with address " + conn.getRemoteSocketAddress() + ":\n" + message, FoxgloveDebugLogMeta.Severity.WARN);
             Logger.getGlobal().warning("Received a message on a connection not known to the server" +
                     "\nMessage from unknown client: " + conn.getRemoteSocketAddress());
             return;
@@ -272,7 +284,7 @@ public class FoxgloveWebSocketServer extends WebSocketServer {
     @Override
     public void onStart() {
         onStartRan.set(true);
-        FoxgloveDebugPanel.log("WebSocket server onStart method ran", FoxgloveDebugLogSeverity.EXPECTED);
+        FoxgloveDebugPanel.log("WebSocket server onStart method ran", Severity.INFO, FoxgloveDebugLogMeta.Tag.EXPECTED);
         System.out.println("WebSocket server started, view robot data in Foxglove at: https://app.foxglove.dev/~/view?ds=foxglove-websocket&ds.url=ws://" + Util.getLocalIp() + ":" + port);
     }
 

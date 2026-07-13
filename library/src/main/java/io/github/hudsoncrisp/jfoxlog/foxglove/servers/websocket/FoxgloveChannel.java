@@ -1,19 +1,12 @@
 package io.github.hudsoncrisp.jfoxlog.foxglove.servers.websocket;
 
-import io.github.hudsoncrisp.jfoxlog.debug.FoxgloveDebugLogSeverity;
+import io.github.hudsoncrisp.jfoxlog.debug.FoxgloveDebugLogMeta;
 import io.github.hudsoncrisp.jfoxlog.debug.FoxgloveDebugPanel;
 import io.github.hudsoncrisp.jfoxlog.foxglove.FoxgloveLoggable;
 
 import java.util.Date;
 
 public class FoxgloveChannel<T extends FoxgloveLoggable> {
-
-    public enum LoggingType {
-        SERVER_DRIVEN,
-        USER_DRIVEN,
-        LOW_FREQUENCY_SERVER_DRIVEN,
-        LOW_FREQUENCY_SERVER_DRIVEN_STATIC
-    }
 
     // Loggable
     public T getLoggable() {
@@ -32,12 +25,12 @@ public class FoxgloveChannel<T extends FoxgloveLoggable> {
 
 
     // Logging Type
-    public LoggingType getLoggingType() {
-        return loggingType;
+    public FoxgloveLoggingFrequencyInfo getLoggingFrequencyInfo() {
+        return loggingFrequencyInfo;
     }
 
-    public FoxgloveChannel<T> setLoggingType(LoggingType loggingType) {
-        this.loggingType = loggingType;
+    public FoxgloveChannel<T> setLoggingType(FoxgloveLoggingFrequencyInfo loggingFrequencyInfo) {
+        this.loggingFrequencyInfo = loggingFrequencyInfo;
         return this;
     }
 
@@ -84,9 +77,9 @@ public class FoxgloveChannel<T extends FoxgloveLoggable> {
     public FoxgloveChannel<T> logCacheDataAccessDates(boolean value) {
         logAccessDate = value;
         if (value) {
-            FoxgloveDebugPanel.log("\"" + topic + "\" has been set to log cache and data access dates", FoxgloveDebugLogSeverity.INFO);
+            FoxgloveDebugPanel.log("\"" + topic + "\" has been set to log cache and data access dates", FoxgloveDebugLogMeta.Severity.INFO);
         } else {
-            FoxgloveDebugPanel.log("\"" + topic + "\" has been set to not log cache and data access dates", FoxgloveDebugLogSeverity.INFO);
+            FoxgloveDebugPanel.log("\"" + topic + "\" has been set to not log cache and data access dates", FoxgloveDebugLogMeta.Severity.INFO);
         }
         return this;
     }
@@ -95,7 +88,7 @@ public class FoxgloveChannel<T extends FoxgloveLoggable> {
     private final T loggable;
     private final int id;
     private final String topic;
-    private LoggingType loggingType;
+    private FoxgloveLoggingFrequencyInfo loggingFrequencyInfo;
     private String cache;
     private Runnable fetch;
     private boolean active = true;
@@ -103,10 +96,10 @@ public class FoxgloveChannel<T extends FoxgloveLoggable> {
     private Date lastCacheAccessDate;
     private boolean logAccessDate;
 
-    public FoxgloveChannel(int id, String topic, LoggingType loggingType, T loggable) {
+    public FoxgloveChannel(int id, String topic, FoxgloveLoggingFrequencyInfo loggingFrequencyInfo, T loggable) {
         this.id = id;
         this.topic = topic;
-        this.loggingType = loggingType;
+        this.loggingFrequencyInfo = loggingFrequencyInfo;
         this.loggable = loggable;
 
         FoxgloveDebugPanel.addChannelDebug(topic, this);

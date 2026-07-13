@@ -1,6 +1,7 @@
 package io.github.hudsoncrisp.jfoxlog.defaults.topics;
 
 import io.github.hudsoncrisp.jfoxlog.foxglove.servers.websocket.FoxgloveChannel;
+import io.github.hudsoncrisp.jfoxlog.foxglove.servers.websocket.FoxgloveLoggingFrequencyInfo;
 import io.github.hudsoncrisp.jfoxlog.foxglove.servers.websocket.FoxgloveWebSocketServer;
 import io.github.hudsoncrisp.jfoxlog.foxglove.types.geometry.Quaternion;
 import io.github.hudsoncrisp.jfoxlog.foxglove.types.geometry.vector.Vector3;
@@ -12,7 +13,7 @@ public class OriginLogger {
 
     private static final FoxgloveChannel<FrameTransform> channel = FoxgloveWebSocketServer.requestNewChannel(
             "Server/Scene/Origin",
-            FoxgloveChannel.LoggingType.LOW_FREQUENCY_SERVER_DRIVEN_STATIC,
+            FoxgloveLoggingFrequencyInfo.fromHertzFrequency(0.5, FoxgloveLoggingFrequencyInfo.DataRetrieveType.CACHE),
             new FrameTransform(
                     Timestamp.now(),
                     "Root",
